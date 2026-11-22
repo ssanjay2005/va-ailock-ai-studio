@@ -38,8 +38,17 @@ try {
     Ensure-Command -Name 'git' -WingetId 'Git.Git' -AddedPath "${env:ProgramFiles}\Git\cmd"
     Ensure-Command -Name 'gh' -WingetId 'GitHub.cli' -AddedPath "${env:ProgramFiles}\GitHub CLI"
 
-    & gh auth status *> $null
-    if ($LASTEXITCODE -ne 0) {
+    # `gh auth status` uses a non-zero exit code when signed out. Suppress its
+    # expected stderr without allowing Windows PowerShell to throw early.
+    $OriginalErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & gh auth status *> $null
+        $SignedIn = ($LASTEXITCODE -eq 0)
+    } finally {
+        $ErrorActionPreference = $OriginalErrorActionPreference
+    }
+    if (-not $SignedIn) {
         Write-Host "Sign in to YOUR GitHub account in the browser window." -ForegroundColor Cyan
         Run-Or-Stop 'GitHub sign-in' { & gh auth login --web --git-protocol https }
     }
@@ -70,8 +79,13 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'Failed to check Git staging area.' }
     if ($Staged) { Run-Or-Stop 'Commit source files' { & git commit -m 'Publish VA AILOCK AI Studio website and starter backend' } }
 
-    & gh repo view $Repository --json name --jq .name *> $null
-    $Exists = ($LASTEXITCODE -eq 0)
+    # Listing is a successful operation even when the target repository does not exist.
+    # Do NOT use `gh repo view` as a negative-existence probe with
+    # $ErrorActionPreference='Stop': Windows PowerShell can turn its 404 stderr
+    # into a terminating NativeCommandError before repository creation runs.
+    $RepoNames = @(& gh repo list $Owner --limit 1000 --json name --jq '.[].name')
+    if ($LASTEXITCODE -ne 0) { throw 'Could not list GitHub repositories to check whether the target exists.' }
+    $Exists = ($RepoNames -contains $RepoName)
     if (-not $Exists) {
         Write-Host "Creating PUBLIC GitHub repository: $Repository" -ForegroundColor Cyan
         Run-Or-Stop 'Create and push GitHub repository' {
@@ -91,14 +105,29 @@ try {
     }
 
     # Set GitHub Pages to publish /docs from the main branch. This API call does NOT host the AI model.
-    & gh api "repos/$Repository/pages" --jq .html_url 2>$null | Out-Null
-    $PagesExists = ($LASTEXITCODE -eq 0)
-    if ($PagesExists) {
-        & gh api -X PUT "repos/$Repository/pages" -f 'source[branch]=main' -f 'source[path]=/docs' 2>$null | Out-Null
-    } else {
-        & gh api -X POST "repos/$Repository/pages" -f 'source[branch]=main' -f 'source[path]=/docs' 2>$null | Out-Null
+    # A new repo normally has no Pages endpoint yet (HTTP 404). Ignore only
+    # that failed probe; the API call below will report a real configuration error.
+    $OriginalErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        & gh api "repos/$Repository/pages" --jq .html_url 2>$null | Out-Null
+        $PagesExists = ($LASTEXITCODE -eq 0)
+    } finally {
+        $ErrorActionPreference = $OriginalErrorActionPreference
     }
-    if ($LASTEXITCODE -ne 0) {
+    $OriginalErrorActionPreference = $ErrorActionPreference
+    try {
+        $ErrorActionPreference = 'Continue'
+        if ($PagesExists) {
+            & gh api -X PUT "repos/$Repository/pages" -f 'source[branch]=main' -f 'source[path]=/docs' 2>$null | Out-Null
+        } else {
+            & gh api -X POST "repos/$Repository/pages" -f 'source[branch]=main' -f 'source[path]=/docs' 2>$null | Out-Null
+        }
+        $PagesConfigured = ($LASTEXITCODE -eq 0)
+    } finally {
+        $ErrorActionPreference = $OriginalErrorActionPreference
+    }
+    if (-not $PagesConfigured) {
         Write-Warning "Files were published, but Pages could not be enabled automatically. Open https://github.com/$Repository/settings/pages and select Deploy from a branch > main > /docs."
     } else {
         Write-Host 'GitHub Pages publishing configuration saved.' -ForegroundColor Green
