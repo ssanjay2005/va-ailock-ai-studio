@@ -1,0 +1,14 @@
+# Never commit private machine configuration or generated files
+.env
+.venv/
+__pycache__/
+*.pyc
+data/assets/*
+!data/assets/.gitkeep
+data/exports/*
+!data/exports/.gitkeep
+*.safetensors
+*.ckpt
+*.pth
+*.pt
+*.mp4

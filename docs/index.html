@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VA AILOCK | AI Studio</title><link rel="stylesheet" href="./style.css"></head>
+<body>
+<div class="shell">
+<aside class="side">
+  <div class="brand"><div class="brandmark">VA<span>◆</span></div><div><strong>VA AILOCK</strong><small>CREATIVE AI STUDIO</small></div></div>
+  <div class="side-caption">WORKSPACE</div>
+  <nav aria-label="Main navigation">
+    <button class="nav active" data-tab="create"><span>✦</span> Image Studio</button>
+    <button class="nav" data-tab="pose"><span>♧</span> Character Lab</button>
+    <button class="nav" data-tab="story"><span>▦</span> Storyboard</button>
+    <button class="nav" data-tab="timeline"><span>▰</span> Video Editor <b id="timeline-count">0</b></button>
+    <button class="nav" data-tab="assistant"><span>⌁</span> AI Assistant</button>
+  </nav>
+  <div class="side-spacer"></div>
+  <div class="side-caption">ENGINE STATUS</div>
+  <div id="status" class="statuslist"><div>Browser-only editor ready</div></div>
+  <div class="side-hint">Online editor works without a server. AI image generation and MP4 rendering require a protected backend.</div>
+<div class="side-caption" style="margin-top:20px">OPTIONAL AI BACKEND</div>
+  <label for="backend-url" class="fieldlabel">HTTPS backend URL</label>
+  <input id="backend-url" type="url" placeholder="https://your-secured-api.example" style="width:100%;padding:10px;border-radius:8px;box-sizing:border-box;background:#1b2639;color:white;border:1px solid #475569" />
+  <button id="backend-save" class="outline" style="width:100%;margin-top:8px">Connect backend</button>
+  <div class="side-hint">Do not connect an unsecured public backend. Saved URL stays in this browser.</div>
+</aside>
+<main class="main">
+  <header class="topbar"><div><div class="breadcrumb">WORKSPACE / <span id="crumb">IMAGE STUDIO</span></div><h1 id="page-title">Bring your stories to life.</h1></div><div class="topright"><span class="pill">LIVE EDITOR</span><span class="avatar">VA</span></div></header>
+  <section id="tab-create" class="tab active">
+    <div class="two-col">
+      <div class="stack">
+        <div class="panel"><div class="panelhead"><div><div class="eyebrow">AI IMAGE GENERATION</div><h2>Create a scene</h2></div><span class="tiny-label">COMFYUI ENGINE</span></div>
+          <label class="fieldlabel" for="image-prompt">Describe your scene</label>
+          <textarea id="image-prompt" rows="4" placeholder="PIXEL finds a suspicious GTA 6 download on his laptop and looks shocked...">A young Tamil boy named PIXEL reacts in shock to a laptop screen in a modern Chennai bedroom, cinematic comedy moment.</textarea>
+          <div class="formgrid"><label>Character / appearance<input id="image-character" value="PIXEL, young Tamil man, ordinary relatable face, short black hair, mustard t-shirt"></label>
+            <label>Location / fixed set<input id="image-location" value="modern Chennai apartment, light blue wall, wooden desk, laptop"></label>
+            <label>Pose<select id="image-pose"><option>standing</option><option>sitting at a desk</option><option>pointing at laptop</option><option>running</option><option>waving</option></select></label>
+            <label>Expression<select id="image-expression"><option>surprised</option><option>happy</option><option>angry</option><option>sad</option><option>confused</option><option>smirking</option></select></label>
+            <label>Camera<select id="image-camera"><option>medium shot</option><option>close-up</option><option>wide shot</option><option>over-the-shoulder shot</option><option>low-angle shot</option></select></label>
+            <label>Seed<input id="image-seed" type="number" value="42" min="0" max="999999999"></label></div>
+          <div class="row-end"><button class="ghost" id="random-seed">↻ Random seed</button><button class="primary" id="generate-image">✦ Generate 2D image</button></div>
+          <p class="helper">Actual model inference requires ComfyUI + an installed checkpoint. A matching LoRA can be loaded from .env.</p>
+        </div>
+        <div class="panel uploadpanel"><div><h3>Bring your own artwork</h3><p>Upload a PNG/JPG as a scene, or export a Character Lab pose.</p></div><label class="uploadbutton">＋ Upload scene image<input type="file" id="upload-image" accept="image/png,image/jpeg,image/webp" hidden></label></div>
+      </div>
+      <div class="stack"><div class="panel tall"><div class="panelhead"><div><div class="eyebrow">SCENE LIBRARY</div><h2>Your generated artwork</h2></div><button class="ghost" id="refresh-library">↻ Refresh</button></div>
+        <div id="gallery" class="gallery"><div class="empty">Your artwork will appear here.<br>Start with a generated image, an upload, or Character Lab.</div></div></div></div>
+    </div>
+  </section>
+  <section id="tab-pose" class="tab">
+    <div class="pose-grid">
+    <div class="panel"><div class="panelhead"><div><div class="eyebrow">SVG CHARACTER RIG</div><h2>Character Pose Lab</h2></div><span class="tiny-label">4K VECTOR EXPORT</span></div>
+      <p class="helper">Build a pose without a generative model. Adjust the character and export a transparent or full-frame PNG for your timeline. This is an editable starter rig, not a complete character animation engine.</p>
+      <div class="sectionhead">Identity</div>
+      <div class="formgrid"><label>Face / eyes<select id="eye"><option value="normal">Normal</option><option value="happy">Happy</option><option value="wide">Wide / shocked</option><option value="sleepy">Sleepy</option><option value="angry">Angry</option></select></label>
+       <label>Mouth<select id="mouth"><option value="smile">Smile</option><option value="open">Open / shocked</option><option value="grin">Grin</option><option value="frown">Frown</option><option value="flat">Neutral</option></select></label>
+       <label>Eyebrows<select id="brow"><option value="normal">Normal</option><option value="raised">Raised</option><option value="angry">Angry</option><option value="worried">Worried</option></select></label>
+       <label>Pose preset<select id="preset"><option value="normal">Natural standing</option><option value="wave">Waving</option><option value="point">Pointing</option><option value="run">Running</option><option value="shock">Shocked</option></select></label></div>
+      <div class="sectionhead">Body controls</div>
+      <div class="sliders">
+       <label>Left arm <output id="left-arm-value">18°</output><input id="left-arm" type="range" min="-140" max="140" value="18"></label>
+       <label>Right arm <output id="right-arm-value">-18°</output><input id="right-arm" type="range" min="-140" max="140" value="-18"></label>
+       <label>Left leg <output id="left-leg-value">8°</output><input id="left-leg" type="range" min="-60" max="60" value="8"></label>
+       <label>Right leg <output id="right-leg-value">-8°</output><input id="right-leg" type="range" min="-60" max="60" value="-8"></label>
+       <label>Head tilt <output id="head-tilt-value">0°</output><input id="head-tilt" type="range" min="-30" max="30" value="0"></label>
+      </div>
+      <div class="sectionhead">Colors and backdrop</div>
+      <div class="formgrid colors"><label>Skin<input id="skin" type="color" value="#c98a64"></label><label>Shirt<input id="shirt" type="color" value="#e6af39"></label><label>Trousers<input id="trousers" type="color" value="#303b5e"></label><label>Background<select id="background"><option value="room">Modern room</option><option value="street">City street</option><option value="plain">Plain cream</option><option value="transparent">Transparent</option></select></label></div>
+      <div class="row-end"><button id="pose-reset" class="ghost">Reset pose</button><button id="pose-download" class="primary">↓ Export 4K PNG</button><button id="pose-add" class="outline">＋ Add to library</button></div>
+    </div>
+    <div class="panel posepanel"><div class="panelhead"><div><div class="eyebrow">LIVE PREVIEW</div><h2>9:16 scene canvas</h2></div><span class="tiny-label">384 × 682 PREVIEW</span></div>
+      <div id="pose-display" class="pose-display"><svg id="character-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 384 682" width="384" height="682" aria-label="Editable 2D cartoon character">
+        <defs><pattern id="tiles" width="35" height="35" patternUnits="userSpaceOnUse"><rect width="35" height="35" fill="#cfaa84"/><path d="M0 0H35M0 35H35" stroke="#b18c69" stroke-width="2"/></pattern></defs>
+        <g id="bg-room"><rect width="384" height="682" fill="#cbdcdf"/><rect width="384" height="390" fill="#d6e6e6"/><rect y="390" width="384" height="292" fill="url(#tiles)"/><path d="M0 390h384" stroke="#7b8e8b" stroke-width="10"/><rect x="254" y="105" width="88" height="121" rx="4" fill="#f8f7e5" stroke="#62818b" stroke-width="9"/><path d="M298 110v115M259 163h79" stroke="#62818b" stroke-width="6"/><rect x="24" y="274" width="97" height="114" rx="5" fill="#987157" stroke="#654934" stroke-width="5"/><path d="M24 321h97M69 331h8" stroke="#f5db9e" stroke-width="4"/><rect x="17" y="238" width="112" height="23" rx="5" fill="#bc9374" stroke="#654934" stroke-width="4"/></g>
+        <g id="bg-street" display="none"><rect width="384" height="682" fill="#d9dfd7"/><path d="M0 110h384v370H0z" fill="#e3bb90"/><rect x="13" y="160" width="123" height="289" fill="#99a9b4" stroke="#3d565d" stroke-width="6"/><rect x="225" y="128" width="145" height="332" fill="#b28b7b" stroke="#654e50" stroke-width="6"/><path d="M0 478h384v204H0" fill="#8e8c88"/><path d="M0 552h384" stroke="#f0dba1" stroke-width="9" stroke-dasharray="52 30"/><rect x="250" y="175" width="80" height="64" fill="#badbd7" stroke="#515f68" stroke-width="7"/><rect x="35" y="193" width="75" height="80" fill="#badbd7" stroke="#515f68" stroke-width="7"/></g>
+        <g id="bg-plain" display="none"><rect width="384" height="682" fill="#f7eddd"/></g>
+        <g id="character" stroke="#32313a" stroke-linejoin="round" stroke-linecap="round">
+          <ellipse cx="190" cy="614" rx="104" ry="16" fill="#343035" fill-opacity=".17" stroke="none"/>
+          <g id="leg-left" transform="rotate(8 171 425)"><path d="M152 412 Q145 477 141 581 L174 587 Q184 478 187 428Z" fill="#303b5e" stroke-width="6"/><path d="M139 577l36 5 12 30q-3 14-60 4-17-9 12-39Z" fill="#f8f1e4" stroke-width="6"/></g>
+          <g id="leg-right" transform="rotate(-8 215 425)"><path d="M192 425 Q206 486 215 585 L245 580 Q240 468 224 410Z" fill="#303b5e" stroke-width="6"/><path d="M214 578l34-5 26 34q0 17-58 10-13-10-2-39Z" fill="#f8f1e4" stroke-width="6"/></g>
+          <g id="arm-left" transform="rotate(18 142 278)"><path d="M145 271Q117 273 110 315L90 408Q93 428 115 426L151 331Z" fill="#c98a64" stroke-width="6"/><ellipse cx="102" cy="429" rx="15" ry="20" fill="#c98a64" stroke-width="5"/></g>
+          <g id="arm-right" transform="rotate(-18 239 278)"><path d="M232 272Q266 276 275 320L293 409Q286 427 264 425L229 330Z" fill="#c98a64" stroke-width="6"/><ellipse cx="284" cy="430" rx="15" ry="20" fill="#c98a64" stroke-width="5"/></g>
+          <path id="torso" d="M149 263Q126 273 133 313L142 436Q184 451 237 434L248 307Q249 278 227 265Z" fill="#e6af39" stroke-width="7"/><path d="M149 271Q190 296 229 269" stroke-width="5" fill="none" stroke="#a17824"/>
+          <g id="head" transform="rotate(0 191 203)"><path d="M181 248V273Q194 292 211 272L209 249" fill="#c98a64" stroke-width="5"/><ellipse cx="192" cy="185" rx="72" ry="82" fill="#c98a64" stroke-width="7"/><ellipse cx="123" cy="195" rx="11" ry="22" fill="#c98a64" stroke-width="5"/><ellipse cx="263" cy="195" rx="11" ry="22" fill="#c98a64" stroke-width="5"/>
+            <path d="M119 169Q111 119 145 111Q149 81 184 95Q211 73 235 104Q267 103 270 147Q245 127 233 132Q211 114 190 126Q165 111 149 138Q135 136 119 169Z" fill="#292c35" stroke-width="6"/>
+            <g id="brows"><path id="brow-l" d="M146 171q16-11 29-2" fill="none" stroke="#2b2428" stroke-width="6"/><path id="brow-r" d="M209 169q16-10 28 2" fill="none" stroke="#2b2428" stroke-width="6"/></g>
+            <g id="eyes"><ellipse id="eye-l" cx="163" cy="192" rx="10" ry="13" fill="#f9f8ee" stroke-width="4"/><ellipse id="eye-r" cx="226" cy="192" rx="10" ry="13" fill="#f9f8ee" stroke-width="4"/><ellipse id="pupil-l" cx="165" cy="195" rx="4" ry="7" fill="#22222a" stroke="none"/><ellipse id="pupil-r" cx="224" cy="195" rx="4" ry="7" fill="#22222a" stroke="none"/></g>
+            <path d="M195 198q-11 13-5 20h9" fill="none" stroke="#8d543e" stroke-width="3.5"/>
+            <g id="mouth-group"><path id="mouth-shape" d="M166 229q28 25 53 0" fill="none" stroke="#642d32" stroke-width="5"/></g>
+          </g>
+        </g>
+      </svg></div>
+      <div class="pose-bottom"><span>Expression system: 5 eye types × 5 mouths × 4 brows = <strong>100 combinations</strong></span><span>SVG source stays editable</span></div>
+    </div></div>
+  </section>
+  <section id="tab-story" class="tab">
+    <div class="panel"><div class="panelhead"><div><div class="eyebrow">STORY TO STORYBOARD</div><h2>Plan your Short</h2></div><span class="tiny-label">OLLAMA OPTIONAL</span></div>
+      <label class="fieldlabel">Story idea or script</label><textarea id="story-text" rows="4">PIXEL wants to buy a PS5 and GTA 6, but when the tea shop owner asks for the ten rupees he owes, PIXEL says he will pay tomorrow.</textarea>
+      <div class="row-end"><label class="compact-label">Number of shots <input type="number" id="story-count" min="2" max="12" value="5"></label><button id="plan-story" class="primary">✦ Plan storyboard</button></div>
+      <p class="helper">With Ollama, this creates AI-written visual beats. Without it, this uses a clearly labeled fixed starter template.</p>
+    </div><div id="planned-scenes" class="storygrid"></div>
+  </section>
+  <section id="tab-timeline" class="tab">
+    <div class="two-col editor-grid"><div class="stack">
+      <div class="panel"><div class="panelhead"><div><div class="eyebrow">SEQUENCE EDITOR</div><h2>Shorts timeline</h2></div><span class="tiny-label" id="total-duration">0.0 SEC</span></div>
+        <div id="timeline-list"><div class="empty">No shots yet. Add images from the library or export your character.</div></div>
+      </div><div class="panel"><div class="panelhead"><div><div class="eyebrow">AUDIO MIX</div><h2>Sound and narration</h2></div></div>
+        <div class="formgrid"><label>Voiceover file<input type="file" id="voice-file" accept="audio/*"></label><label>Background music<input type="file" id="music-file" accept="audio/*"></label></div>
+        <div class="assetline"><span id="voice-name">No voiceover</span><button id="voice-remove" class="ghost">Remove</button></div><div class="assetline"><span id="music-name">No music</span><button id="music-remove" class="ghost">Remove</button></div>
+        <label class="sliderlabel">Music volume <output id="music-volume-value">12%</output><input id="music-volume" type="range" min="0" max="50" value="12"></label>
+      </div>
+      <div class="panel"><div class="panelhead"><div><div class="eyebrow">EXPORT SETTINGS</div><h2>Render a video</h2></div></div>
+        <div class="formgrid"><label>Resolution<select id="render-resolution"><option value="preview">540 × 960 (test)</option><option value="1080p" selected>1080 × 1920 (Shorts)</option><option value="4k">2160 × 3840 (4K)</option></select></label><label>Format<input readonly value="MP4 / H.264 / 30 FPS"></label></div>
+        <button id="render-video" class="primary full">▶ Render video</button><div id="render-result" class="render-result"></div>
+        <p class="helper">This renders still scenes with optional motion and audio. It is not a generative image-to-video model.</p>
+      </div>
+    </div><div class="panel"><div class="panelhead"><div><div class="eyebrow">LIVE PREVIEW</div><h2>Shot preview</h2></div></div><div class="film-preview"><img id="timeline-preview" alt="Selected video scene"/><div id="preview-placeholder">Select a shot to preview it</div></div><div class="preview-footer">Use ↑ ↓ to reorder shots; each shot has its own duration and motion type.</div></div></div>
+  </section>
+  <section id="tab-assistant" class="tab">
+    <div class="chat-layout"><div class="panel chat-panel"><div class="panelhead"><div><div class="eyebrow">LOCAL CREATIVE ASSISTANT</div><h2>Ask VA AILOCK Studio</h2></div><span class="tiny-label">OLLAMA ENGINE</span></div><div id="chat-log" class="chat-log"><div class="bubble assistant-bubble">I can help plan original Tamil comedy Shorts, write Tanglish narration, and improve scene prompts. Connect Ollama to enable conversational AI.</div></div><div class="chat-compose"><textarea id="chat-input" rows="2" placeholder="Write me a funny 22-second narrator-only script... "></textarea><button class="primary" id="send-chat">Send ↗</button></div></div><div class="panel suggestions"><div class="eyebrow">IDEAS TO TRY</div><h2>Creative prompts</h2><button class="suggest" data-chat="Write a 22-second narrator-only Tanglish comedy script with a hook and unexpected ending about a boy at a tea shop.">22-second Tanglish comedy script ↗</button><button class="suggest" data-chat="Give me 8 visual shots for a modern Chennai cartoon scene keeping the same room and character design.">8 consistent scene prompts ↗</button><button class="suggest" data-chat="Explain how to use character reference images and LoRA to maintain PIXEL consistency across scenes.">Character consistency workflow ↗</button><p class="helper">Your local assistant runs through Ollama if configured. It does not have ChatGPT's underlying model or tool access.</p></div></div>
+  </section>
+  <div id="toast" role="status" aria-live="polite"></div>
+</main></div>
+<script src="./app.js"></script></body></html>
